@@ -216,3 +216,43 @@ Time was primarily spent on:
 - Documentation
 
 ---
+
+# Design
+
+                +----------------+
+                | Worker Polling |
+                +-------+--------+
+                        |
+                        v
+        +-------------------------------+
+        | Claim Emails                  |
+        | FOR UPDATE SKIP LOCKED        |
+        +---------------+---------------+
+                        |
+                        v
+                Lease Ownership
+                        |
+                        v
+             Check Mailbox Limit
+                        |
+              +---------+---------+
+              |                   |
+              | No                | Yes
+              v                   v
+        Retry Later       Check Global Token
+                                  |
+                        +---------+---------+
+                        |                   |
+                        | No                | Yes
+                        v                   v
+                  Retry Later          Send Email
+                                          |
+                                          v
+                                 Mock Provider
+                                          |
+          +---------------+---------------+---------------+
+          |               |               |               |
+          v               v               v               v
+        Sent        Transient Retry   Dead Letter   Ambiguous Retry
+
+---
